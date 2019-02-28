@@ -16,7 +16,7 @@ class Mesh extends Drawable {
   constructor(objString: string, center: vec3) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
-
+    
     this.objString = objString;
   }
 
@@ -60,6 +60,7 @@ class Mesh extends Drawable {
     this.generateCol();
 
     this.count = this.indices.length;
+    this.numInstances = 1;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.bufIdx);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
@@ -74,6 +75,13 @@ class Mesh extends Drawable {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufUV);
     gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.STATIC_DRAW);
+
+    console.log(this.positions);
+    console.log(this.center);
+    console.log(this.normals);
+    console.log(this.indices);
+    console.log(this.uvs);
+    console.log(this.colors);
 
     console.log(`Created Mesh from OBJ`);
     this.objString = ""; // hacky clear

@@ -49,6 +49,7 @@ class ShaderProgram {
     }
 
     this.attrPos = gl.getAttribLocation(this.prog, "vs_Pos");
+    this.attrNor = gl.getAttribLocation(this.prog, "vs_Nor");
     this.attrCol = gl.getAttribLocation(this.prog, "vs_Col");
     this.attrTranslate = gl.getAttribLocation(this.prog, "vs_Translate");
     this.attrUV = gl.getAttribLocation(this.prog, "vs_UV");
@@ -171,7 +172,9 @@ class ShaderProgram {
     // by the GPU, thus being the same value for the first set of four vertices,
     // then advancing to a new value for the next four, then the next four, and
     // so on.
+
     gl.drawElementsInstanced(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0, d.numInstances);
+    //gl.drawElements(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0);
 
     if (this.attrPos != -1) gl.disableVertexAttribArray(this.attrPos);
     if (this.attrNor != -1) gl.disableVertexAttribArray(this.attrNor);

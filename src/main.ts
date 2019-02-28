@@ -7,6 +7,11 @@ import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import {readTextFile} from './globals';
+import Mesh from './geometry/Mesh';
+//import Turtle from './l-systems/turtle';
+//import ExpansionRule from './l-systems/expansionrule';
+import LSystem from './l-systems/lsystem';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -15,13 +20,31 @@ const controls = {
 
 let square: Square;
 let screenQuad: ScreenQuad;
+let mesh_test: Mesh;
+
 let time: number = 0.0;
+let obj0: string = readTextFile('../resources/obj/wahoo.obj');
+
+//let turtle: Turtle;
+//let exprule: ExpansionRule;
 
 function loadScene() {
   square = new Square();
   square.create();
   screenQuad = new ScreenQuad();
   screenQuad.create();
+
+  //call l-system stuff
+  let alphabet = new Array<string>();
+  alphabet.push("F");
+  alphabet.push("X");
+  alphabet.push("+");
+  alphabet.push("-");
+  let lsys = new LSystem("F", alphabet, 1);
+
+  //test if mesh works
+  mesh_test = new Mesh(obj0, vec3.fromValues(0,0,0));
+  mesh_test.create();
 
   // Set up instanced rendering data arrays here.
   // This example creates a set of positional
@@ -30,7 +53,8 @@ function loadScene() {
   // one square is actually passed to the GPU
   let offsetsArray = [];
   let colorsArray = [];
-  let n: number = 100.0;
+  //let n: number = 100.0;
+  let n: number = 2.0;
   for(let i = 0; i < n; i++) {
     for(let j = 0; j < n; j++) {
       offsetsArray.push(i);
@@ -45,6 +69,9 @@ function loadScene() {
   }
   let offsets: Float32Array = new Float32Array(offsetsArray);
   let colors: Float32Array = new Float32Array(colorsArray);
+
+  mesh_test.setNumInstances(n * n);
+
   square.setInstanceVBOs(offsets, colors);
   square.setNumInstances(n * n); // grid of "particles"
 }
@@ -74,12 +101,13 @@ function main() {
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(50, 50, 10), vec3.fromValues(50, 50, 0));
+  const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+  //gl.enable(gl.BLEND); // Alpha blending
+  gl.enable(gl.DEPTH_TEST);
+  //gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
 
   const instancedShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
@@ -101,7 +129,10 @@ function main() {
     renderer.clear();
     renderer.render(camera, flat, [screenQuad]);
     renderer.render(camera, instancedShader, [
-      square,
+      mesh_test
+    ]);
+    renderer.render(camera, instancedShader, [
+      square
     ]);
     stats.end();
 
