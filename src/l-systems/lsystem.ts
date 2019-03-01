@@ -13,15 +13,14 @@ class LSystem {
   public transfvecs: Array<vec4>;
 
   constructor(input: string, alphabet: Array<string>, iters: number) {
+    
     this.axiom = input;
     this.alphabet = alphabet;
     this.expmap = new Map();
     this.drawmap = new Map();
     this.turtlestack = new Array();
     this.transfvecs = new Array();
-    for (var i = 0; i < 4; i++) {
-        this.transfvecs.push(vec4.fromValues(0,0,0,0));
-    }
+    console.log(this.axiom);
     this.fillExpMap();
     this.fillDrawMap();
     this.lsysParse(iters);
@@ -29,15 +28,19 @@ class LSystem {
   }
 
   lsysParse(iters: number) {
-      this.newaxiom = this.axiom;
+      //this.newaxiom = this.axiom;
+      this.newaxiom = "";
       for (var i = 0; i < iters; i++) {
         for (let letter of this.axiom) {
-            console.log(this.newaxiom);
+            //console.log(this.newaxiom);
             //find expansion string for letter
             let newstr = this.expmap.get(letter).getExpansion();
+            console.log(newstr);
             //replace letter with new expansion
             //axiom[index] = newstr;
-            this.newaxiom.replace(letter, newstr);
+            //this.newaxiom.replace(letter, newstr);
+            this.newaxiom += newstr;
+            console.log(this.newaxiom);
         }
       }
   }
@@ -45,7 +48,7 @@ class LSystem {
   lsysExecute() {
       let recurDepth = 0;
       let turt = new Turtle(vec3.fromValues(0, 0, 0), 
-                            vec3.fromValues(0, 0, 0), recurDepth, 
+                            quat.create(), recurDepth, 
                             vec3.fromValues(0.0, 0.0, 0.0));
       let currentTurt = turt;
       this.pushTurtle(currentTurt);
@@ -68,8 +71,7 @@ class LSystem {
           }
           else {
               let draw = this.drawmap.get(letter);
-              draw.orientation = currentTurt.orientation;
-              quat.rotationTo(draw.q, draw.orientation, draw.rotation);
+              currentTurt.orientation = draw.orientation;
               // apply drawing rule transformations to turtle
               // also calls the drawing function
               currentTurt.addTranslation(draw.translation);
@@ -77,11 +79,14 @@ class LSystem {
               currentTurt.setDepth(recurDepth);
               currentTurt.setColor(draw.color);
               // set up the transformation vec4s
-              for (var j = 0; j < 4; j++) {
-                for (var i = 0; i < 4; i++) {
-                    this.transfvecs[j][i] = draw.mat[(j * 4) + i];
-                }
+              for (var i = 0; i < 4; i++) {
+                  this.transfvecs.push(vec4.fromValues(draw.mat[i+0],
+                                                       draw.mat[i+4],
+                                                       draw.mat[i+8],
+                                                       draw.mat[i+12]));
               }
+              console.log("transfvecs size");
+              console.log(this.transfvecs.length);
           }
       }
   }

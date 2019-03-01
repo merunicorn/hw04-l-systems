@@ -1,12 +1,12 @@
-import {vec3, mat4} from 'gl-matrix';
+import {vec3, mat4, quat} from 'gl-matrix';
 
 class Turtle {
   position: vec3 = vec3.create();
-  public orientation: vec3 = vec3.create();
+  public orientation: quat = quat.create();
   recurDepth: number = 0;
   penColor: vec3 = vec3.create();
 
-  constructor(position: vec3, orientation: vec3, 
+  constructor(position: vec3, orientation: quat, 
               recurDepth: number, penColor: vec3) {
     this.position = position;
     this.orientation = orientation;

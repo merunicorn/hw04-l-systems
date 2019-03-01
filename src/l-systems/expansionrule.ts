@@ -8,6 +8,9 @@ class ExpansionRule {
     if (input == "F") {
         this.expansion = "FF";
     }
+    else if (input == "X") {
+        this.expansion = "[+FX][-FX]FFX";
+    }
     else {
         this.expansion = input;
     }
