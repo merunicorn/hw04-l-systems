@@ -95,12 +95,9 @@ class Mesh extends Drawable {
     transf3: Float32Array, transf4: Float32Array) {
     
     this.colors = colors;
-    //this.offsets = offsets;
   
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
     gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
-    //gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTranslate);
-    //gl.bufferData(gl.ARRAY_BUFFER, this.offsets, gl.STATIC_DRAW);*/
 
     this.transf1 = transf1;
     this.transf2 = transf2;

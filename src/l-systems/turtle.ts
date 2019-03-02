@@ -2,7 +2,6 @@ import {vec3, mat4, quat, vec4} from 'gl-matrix';
 
 class Turtle {
   position: vec3 = vec3.create();
-  //public orientation: vec3 = vec3.create();
   public orientation: quat = quat.create();
   recurDepth: number = 0;
   penColor: vec3 = vec3.create();
@@ -22,10 +21,6 @@ class Turtle {
   addTranslation(translate: number) {
     let orient = vec4.create();
     let t = mat4.create();
-    /*let ori = quat.create();
-    quat.fromEuler(ori, this.orientation[0], 
-                      this.orientation[1], 
-                      this.orientation[2]);*/
     mat4.fromQuat(t, this.orientation);
     // update based on up vector and new orientation matrix
     vec4.transformMat4(orient, vec4.fromValues(0.0,1.0,0.0,1.0), t);
@@ -37,9 +32,6 @@ class Turtle {
   }
 
   updateOrientation(rot: vec3) {
-    //this.orientation[0] += rot[0];
-    //this.orientation[1] += rot[1];
-    //this.orientation[2] += rot[2];
     let q = quat.create();
     quat.fromEuler(q, rot[0], rot[1], rot[2]);
     quat.multiply(this.orientation, this.orientation, q);

@@ -20,14 +20,13 @@ const controls = {
 
 let square: Square;
 let screenQuad: ScreenQuad;
-let mesh_test: Mesh;
-let numInst: number = 2;
+let mesh_stem: Mesh;
+let mesh_bud: Mesh;
+let numInst: number = 4;
 
 let time: number = 0.0;
-let obj0: string = readTextFile('../resources/obj/rose.obj');
-
-//let turtle: Turtle;
-//let exprule: ExpansionRule;
+let obj0: string = readTextFile('../resources/obj/stem.obj');
+let obj1: string = readTextFile('../resources/obj/bud.obj');
 
 function loadScene() {
   square = new Square();
@@ -35,19 +34,23 @@ function loadScene() {
   screenQuad = new ScreenQuad();
   screenQuad.create();
 
-  //call l-system stuff
+  // call l-system stuff
   let alphabet = new Array<string>();
   alphabet.push("F");
+  alphabet.push("L");
   alphabet.push("X");
   alphabet.push("+");
   alphabet.push("-");
   alphabet.push("[");
   alphabet.push("]");
-  let lsys = new LSystem("FX", alphabet, numInst);
+  let lsys = new LSystem("FXL", alphabet, numInst);
 
-  //test if mesh works
-  mesh_test = new Mesh(obj0, vec3.fromValues(0,0,0));
-  mesh_test.create();
+  // build meshes
+  mesh_stem = new Mesh(obj0, vec3.fromValues(0,0,0));
+  mesh_stem.create();
+
+  mesh_bud = new Mesh(obj1, vec3.fromValues(0,0,0));
+  mesh_bud.create();
 
   // Set up instanced rendering data arrays here.
   // This example creates a set of positional
@@ -60,6 +63,12 @@ function loadScene() {
   let transf2Array = [];
   let transf3Array = [];
   let transf4Array = [];
+
+  let bcolorsArray = [];
+  let btransf1Array = [];
+  let btransf2Array = [];
+  let btransf3Array = [];
+  let btransf4Array = [];
   //let n: number = 100.0;
   let k: number = (lsys.transfvecs.length);
   console.log(k);
@@ -89,6 +98,40 @@ function loadScene() {
       colorsArray.push(lsys.colors[kcount][2]);
       colorsArray.push(lsys.colors[kcount][3]);
   }
+  let bcount = lsys.btransfvecs.length / 4.0;
+  console.log("b");
+  console.log(bcount);
+  for (let b = 0; b < bcount; b++) {
+      btransf1Array.push(lsys.btransfvecs[0+ 4*b][0]);
+      btransf1Array.push(lsys.btransfvecs[1+ 4*b][0]);
+      btransf1Array.push(lsys.btransfvecs[2+ 4*b][0]);
+      btransf1Array.push(lsys.btransfvecs[3+ 4*b][0]);
+      btransf2Array.push(lsys.btransfvecs[0+ 4*b][1]);
+      btransf2Array.push(lsys.btransfvecs[1+ 4*b][1]);
+      btransf2Array.push(lsys.btransfvecs[2+ 4*b][1]);
+      btransf2Array.push(lsys.btransfvecs[3+ 4*b][1]);
+      btransf3Array.push(lsys.btransfvecs[0+ 4*b][2]);
+      btransf3Array.push(lsys.btransfvecs[1+ 4*b][2]);
+      btransf3Array.push(lsys.btransfvecs[2+ 4*b][2]);
+      btransf3Array.push(lsys.btransfvecs[3+ 4*b][2]);
+      btransf4Array.push(lsys.btransfvecs[0+ 4*b][3]);
+      btransf4Array.push(lsys.btransfvecs[1+ 4*b][3]);
+      btransf4Array.push(lsys.btransfvecs[2+ 4*b][3]);
+      btransf4Array.push(lsys.btransfvecs[3+ 4*b][3]);
+
+      bcolorsArray.push(lsys.bcolors[b][0]);
+      bcolorsArray.push(lsys.bcolors[b][1]);
+      bcolorsArray.push(lsys.bcolors[b][2]);
+      bcolorsArray.push(lsys.bcolors[b][3]);
+  }
+  
+  console.log("b arrays");
+  console.log(btransf1Array);
+  console.log(btransf2Array);
+  console.log(btransf3Array);
+  console.log(btransf4Array);
+  console.log(lsys.btransfvecs);
+    
   /*
   for(let i = 0; i < n; i++) {
     for(let j = 0; j < n; j++) {
@@ -145,12 +188,17 @@ function loadScene() {
   let transf3: Float32Array = new Float32Array(transf3Array);
   let transf4: Float32Array = new Float32Array(transf4Array);
 
-  mesh_test.setNumInstances(k);
-  mesh_test.setVBOTransform(colors, transf1, transf2, transf3, transf4);
+  let bcolors: Float32Array = new Float32Array(bcolorsArray);
+  let btransf1: Float32Array = new Float32Array(btransf1Array);
+  let btransf2: Float32Array = new Float32Array(btransf2Array);
+  let btransf3: Float32Array = new Float32Array(btransf3Array);
+  let btransf4: Float32Array = new Float32Array(btransf4Array);
 
-  //square.setVBOTransform(transf1, transf2, transf3, transf4);
-  //square.setInstanceVBOs(offsets, colors, transf1, transf2, transf3, transf4);
-  //square.setNumInstances(n * n); // grid of "particles"
+  mesh_stem.setNumInstances(k);
+  mesh_stem.setVBOTransform(colors, transf1, transf2, transf3, transf4);
+
+  mesh_bud.setNumInstances(bcount);
+  mesh_bud.setVBOTransform(bcolors, btransf1, btransf2, btransf3, btransf4);
 }
 
 function main() {
@@ -206,11 +254,11 @@ function main() {
     renderer.clear();
     renderer.render(camera, flat, [screenQuad]);
     renderer.render(camera, instancedShader, [
-      mesh_test
+      mesh_stem
     ]);
-    /*renderer.render(camera, instancedShader, [
-      square
-    ]);*/
+    renderer.render(camera, instancedShader, [
+      mesh_bud
+    ]);
     stats.end();
 
     // Tell the browser to call `tick` again whenever it renders a new frame

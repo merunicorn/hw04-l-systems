@@ -11,8 +11,12 @@ class LSystem {
   axiom: string;
   newaxiom: string;
   public mat: mat4;
+  public matb: mat4;
   public transfvecs: Array<vec4>;
+  public btransfvecs: Array<vec4>;
   public colors: Array<vec4>;
+  public bcolors: Array<vec4>;
+  iters: number;
 
   constructor(input: string, alphabet: Array<string>, iters: number) {
     
@@ -22,8 +26,12 @@ class LSystem {
     this.drawmap = new Map();
     this.turtlestack = new Array();
     this.mat = mat4.create();
+    this.matb = mat4.create();
     this.transfvecs = new Array();
+    this.btransfvecs = new Array();
     this.colors = new Array();
+    this.bcolors = new Array();
+    this.iters = iters;
     console.log(this.axiom);
     this.fillExpMap();
     this.fillDrawMap();
@@ -35,13 +43,10 @@ class LSystem {
       this.newaxiom = "";
       for (var i = 0; i < iters; i++) {
         for (let letter of this.axiom) {
-            //console.log(this.newaxiom);
             //find expansion string for letter
             let newstr = this.expmap.get(letter).getExpansion();
             console.log(newstr);
             //replace letter with new expansion
-            //axiom[index] = newstr;
-            //this.newaxiom.replace(letter, newstr);
             this.newaxiom += newstr;
         }
         console.log("after iters"+i);
@@ -59,14 +64,12 @@ class LSystem {
                             quat.create(), recurDepth, 
                             vec3.fromValues(0.0, 0.0, 0.0));
       let currentTurt = turt;
-      //this.pushTurtle(currentTurt);
       let arrLength = 0;
       for (let letter of this.newaxiom) {
           console.log("on character "+letter);
           if (letter == "[") {
               recurDepth++;
               // clone turtle
-              //let copyTurt = Object.assign({}, currentTurt);
               let new_pos = vec3.create();
               vec3.copy(new_pos, currentTurt.position);
               let new_ori = quat.create();
@@ -74,27 +77,18 @@ class LSystem {
               let new_col = vec3.create();
               vec3.copy(new_col, currentTurt.penColor);
               let copyTurt = new Turtle(new_pos, new_ori, recurDepth, new_col);
-              //currentTurt.addTranslation(vec3.fromValues(1.0, 0.0, 1.0));
-              
-              console.log("currentTurt");
-              console.log(currentTurt.position);
-              console.log("copyTurt");
-              console.log(copyTurt.position);
+
               // push clone onto stack
               arrLength = this.pushTurtle(copyTurt);
               
               console.log("reached [");
           }
           else if (letter == "]") {
-              for (let k = 0; k < arrLength; k++) {
-                  console.log("current stack @" + k);
-                  console.log(this.turtlestack[k].position);
-              }
               // update working turtle to one about to pop
               // pop turtle off stack
               currentTurt = this.popTurtle();
-              console.log("current turtle position");
-              console.log(currentTurt.position);
+              //console.log("current turtle position");
+              //console.log(currentTurt.position);
               arrLength--;
               recurDepth--;
               console.log("reached ]");
@@ -103,9 +97,15 @@ class LSystem {
               // don't draw but update turtle
               let draw = this.drawmap.get(letter);
               draw.depth = recurDepth;
-              draw.getDrawOp();
-              console.log("current turtle stuff");
-              console.log(currentTurt.position);
+              var random0 = Math.random();
+              var random1 = Math.random();
+              random0 *= 100.0;
+              random1 *= 100.0;
+              console.log(random0);
+              console.log(random1);
+              draw.getDrawOp(random0, random1);
+              //console.log("current turtle stuff");
+              //console.log(currentTurt.position);
               currentTurt.addTranslation(draw.translation);
               currentTurt.updateOrientation(draw.rotation);
               currentTurt.setDepth(recurDepth);
@@ -113,12 +113,18 @@ class LSystem {
               draw.reset();
           }
           else {
-              console.log("recursion depth");
-              console.log(recurDepth);
+              //console.log("recursion depth");
+              //console.log(recurDepth);
               let draw = this.drawmap.get(letter);
               
               draw.depth = recurDepth;
-              draw.getDrawOp();
+              var random0 = Math.random();
+              var random1 = Math.random();
+              random0 *= 100.0;
+              random1 *= 100.0;
+              console.log(random0);
+              console.log(random1);
+              draw.getDrawOp(random0, random1);
               let previousPos = vec3.create();
               previousPos = vec3.copy(previousPos, currentTurt.position);
               // apply drawing rule transformations to turtle
@@ -127,24 +133,24 @@ class LSystem {
               currentTurt.updateOrientation(draw.rotation);
               currentTurt.setDepth(recurDepth);
               currentTurt.setColor(draw.color);
-              console.log("draw translation" + draw.translation);
-              console.log("turtle translation" + currentTurt.position);
 
               let posSize = vec3.create();
               for (let l = 0; l < 3; l++) {
                   posSize[l] = currentTurt.position[l] - previousPos[l];
               }
               let scaleAmt = vec3.length(posSize);
-              console.log("scale");
-              console.log(scaleAmt);
+              //console.log("scale");
+              //console.log(scaleAmt);
               let scaleTurt = vec3.create();
+              let scaleBud = vec3.create();
+              var randBud = Math.random();
               for (let m = 0; m < 3; m++) {
-                  scaleTurt[m] = scaleAmt / 30.0;
+                  scaleTurt[m] = scaleAmt / (draw.scale_num * 10.0);
+                  scaleBud[m] = scaleAmt / (draw.scale_num * 3.0);
               }
-              console.log(scaleTurt);
 
               this.setUpTransfMat(currentTurt.orientation, previousPos, scaleTurt);
-              //this.setUpTransfMat(vec3.fromValues(0.0,0.0,0.0), currentTurt.position, vec3.fromValues(1.0,1.0,1.0));
+              this.setUpBTransfMat(currentTurt.orientation, previousPos, scaleBud);
 
               // set up the transformation vec4s
               for (var i = 0; i < 4; i++) {
@@ -153,15 +159,25 @@ class LSystem {
                                                      this.mat[i+8],
                                                      this.mat[i+12]));
               }
-              this.colors.push(vec4.fromValues(draw.color[0],
-                                               draw.color[1],
-                                               draw.color[2],
+
+              if (randBud < 0.3 && recurDepth >= 3) {
+                  for (var j = 0; j < 4; j++) {
+                      this.btransfvecs.push(vec4.fromValues(this.matb[j+0],
+                                                            this.matb[j+4],
+                                                            this.matb[j+8],
+                                                            this.matb[j+12]));
+                  }
+                  this.bcolors.push(vec4.fromValues(1.0,
+                    (52.0/255.0),
+                    (85.0/255.0),
+                    1.0));
+              }  
+
+              this.colors.push(vec4.fromValues((157.0/255.0),
+                                               (202.0/255.0),
+                                               (114.0/255.0),
                                                1.0));
-              console.log("color" + this.colors[this.colors.length-1]);
-              console.log("transfvecs size");
-              console.log(this.transfvecs.length);
               draw.reset();
-              //console.log(this.transfvecs);
           }
       }
   }
@@ -177,7 +193,7 @@ class LSystem {
   fillDrawMap() {
     for (var i = 0; i < this.alphabet.length; i++) {
         let letter = this.alphabet[i];
-        let drawrule = new DrawingRule(letter);
+        let drawrule = new DrawingRule(letter, this.iters);
         this.drawmap.set(letter, drawrule);
     }
   }
@@ -201,6 +217,17 @@ class LSystem {
     mat4.fromScaling(s, scale);
     mat4.multiply(this.mat,t,r);
     mat4.multiply(this.mat,this.mat,s);
+  }
+
+  setUpBTransfMat(rot: quat, trans: vec3, scale: vec3) {
+    let t = mat4.create();
+    mat4.fromTranslation(t, trans);
+    let r = mat4.create();
+    mat4.fromQuat(r, rot);
+    let s = mat4.create();
+    mat4.fromScaling(s, scale);
+    mat4.multiply(this.matb,t,r);
+    mat4.multiply(this.matb,this.matb,s);
   }
 };
 

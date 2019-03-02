@@ -24,9 +24,11 @@ void main()
     
     float ambientTerm = 0.2;
     float lightIntensity = diffuseTerm + ambientTerm;
+
+    vec4 lightCol = vec4(1.0, 196.0/255.0, 97.0/255.0, 1.0);
     
     // Compute final shaded color
-    out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
+    out_Col = vec4(diffuseColor.rgb * lightIntensity * lightCol.rgb, diffuseColor.a);
     
     //out_Col = vec4(1.0, 0.0, 0.0, 1.0);
 }
