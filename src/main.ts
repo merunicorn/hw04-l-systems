@@ -1,4 +1,4 @@
-import {vec3} from 'gl-matrix';
+import {vec3, vec4} from 'gl-matrix';
 import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
@@ -55,7 +55,7 @@ function loadScene() {
   // of squares, even though the VBO data for just
   // one square is actually passed to the GPU
   //let offsetsArray = [];
-  //let colorsArray = [];
+  let colorsArray = [];
   let transf1Array = [];
   let transf2Array = [];
   let transf3Array = [];
@@ -65,7 +65,7 @@ function loadScene() {
   console.log(k);
   k = k / 4.0;
   console.log(k);
-  let n: number = 2.0;
+  //let n: number = 2.0;
   for (let kcount = 0; kcount < k; kcount++) {
       transf1Array.push(lsys.transfvecs[0+ 4*kcount][0]);
       transf1Array.push(lsys.transfvecs[1+ 4*kcount][0]);
@@ -83,6 +83,11 @@ function loadScene() {
       transf4Array.push(lsys.transfvecs[1+ 4*kcount][3]);
       transf4Array.push(lsys.transfvecs[2+ 4*kcount][3]);
       transf4Array.push(lsys.transfvecs[3+ 4*kcount][3]);
+
+      colorsArray.push(lsys.colors[kcount][0]);
+      colorsArray.push(lsys.colors[kcount][1]);
+      colorsArray.push(lsys.colors[kcount][2]);
+      colorsArray.push(lsys.colors[kcount][3]);
   }
   /*
   for(let i = 0; i < n; i++) {
@@ -134,14 +139,14 @@ function loadScene() {
     }
   }*/
   //let offsets: Float32Array = new Float32Array(offsetsArray);
-  //let colors: Float32Array = new Float32Array(colorsArray);
+  let colors: Float32Array = new Float32Array(colorsArray);
   let transf1: Float32Array = new Float32Array(transf1Array);
   let transf2: Float32Array = new Float32Array(transf2Array);
   let transf3: Float32Array = new Float32Array(transf3Array);
   let transf4: Float32Array = new Float32Array(transf4Array);
 
   mesh_test.setNumInstances(k);
-  mesh_test.setVBOTransform(transf1, transf2, transf3, transf4);
+  mesh_test.setVBOTransform(colors, transf1, transf2, transf3, transf4);
 
   //square.setVBOTransform(transf1, transf2, transf3, transf4);
   //square.setInstanceVBOs(offsets, colors, transf1, transf2, transf3, transf4);

@@ -13,7 +13,7 @@ void main()
     //out_Col = vec4(dist) * fs_Col;
     //out_Col = fs_Col;
 
-    vec4 diffuseColor = vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 diffuseColor = vec4(fs_Col);
 
     vec4 light = vec4(1.0, 5.0, 0.0, 0.0);
     

@@ -1,7 +1,8 @@
-import {vec3, mat4, quat} from 'gl-matrix';
+import {vec3, mat4, quat, vec4} from 'gl-matrix';
 
 class Turtle {
   position: vec3 = vec3.create();
+  //public orientation: vec3 = vec3.create();
   public orientation: quat = quat.create();
   recurDepth: number = 0;
   penColor: vec3 = vec3.create();
@@ -9,21 +10,39 @@ class Turtle {
   constructor(position: vec3, orientation: quat, 
               recurDepth: number, penColor: vec3) {
     this.position = position;
-    this.orientation = orientation;
+    this.orientation = quat.create();
     this.recurDepth = recurDepth;
     this.penColor = penColor;
+    this.addTranslation = this.addTranslation.bind(this);
+    this.updateOrientation = this.updateOrientation.bind(this);
+    this.setDepth = this.setDepth.bind(this);
+    this.setColor = this.setColor.bind(this);
   }
 
-  addTranslation(pos: vec3) {
-    for (let i = 0; i < 3; i++) {
-      this.position[i] += pos[i];
-    }
+  addTranslation(translate: number) {
+    let orient = vec4.create();
+    let t = mat4.create();
+    /*let ori = quat.create();
+    quat.fromEuler(ori, this.orientation[0], 
+                      this.orientation[1], 
+                      this.orientation[2]);*/
+    mat4.fromQuat(t, this.orientation);
+    // update based on up vector and new orientation matrix
+    vec4.transformMat4(orient, vec4.fromValues(0.0,1.0,0.0,1.0), t);
+    let trans = vec3.create();
+    trans = vec3.fromValues(orient[0] * translate,
+              orient[1] * translate,
+              orient[2] * translate);
+    vec3.add(this.position, this.position, trans);
   }
 
-  addRotation(rot: vec3) {
-    for (let i = 0; i < 3; i++) {
-      this.orientation[i] += rot[i];
-    }
+  updateOrientation(rot: vec3) {
+    //this.orientation[0] += rot[0];
+    //this.orientation[1] += rot[1];
+    //this.orientation[2] += rot[2];
+    let q = quat.create();
+    quat.fromEuler(q, rot[0], rot[1], rot[2]);
+    quat.multiply(this.orientation, this.orientation, q);
   }
 
   setDepth(depth: number) {
